@@ -43,10 +43,10 @@ if __name__=="__main__":
     # Training
     'numIters': 1000,                     # Number of iterations
     'numEps': 100,                        # Number of complete self-play games to simulate during a new iteration
-    'numMCTSSims': 25,                    # Number of games moves for MCTS to simulate.
     'epochs': 10,                         # Number of learning epochs
     'batch_size': 64,                     # Batch size for training
     # MCTS
+    'numMCTSSims': 25,                    # Number of games moves for MCTS to simulate.
     'cpuct': 1,
     'tempThreshold': 0,
     'maxlenQueue': 200000,                # Max number of game examples acquired from self plays.

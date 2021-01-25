@@ -5,17 +5,17 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from Utils import AverageMeter
+from Utils import AverageMeter, getValueFromDict
 
 class Connect4Net(nn.Module):
   
   def __init__(self, args):
     # Parameters
-    self.rows = args['rows']
-    self.cols = args['cols']
-    self.num_actions = args['num_actions']
-    self.num_channels = args['num_channels']
-    self.dropout = args['dropout']
+    self.rows = getValueFromDict(args, 'rows')
+    self.cols = getValueFromDict(args, 'cols')
+    self.num_actions = getValueFromDict(args, 'num_actions')
+    self.num_channels = getValueFromDict(args, 'num_channels')
+    self.dropout = getValueFromDict(args, 'dropout')
     # Internal structures
     super(Connect4Net, self).__init__()
     # Convolution layers
@@ -53,12 +53,12 @@ class Connect4Net(nn.Module):
 class Connect4NetWrapper():
   
   def __init__(self, args):
-    self.rows = args['rows']
-    self.cols = args['cols']
-    self.num_actions = args['num_actions']
-    self.cuda = args['cuda']
-    self.epochs = args['epochs']
-    self.batch_size = args['batch_size']
+    self.rows = getValueFromDict(args, 'rows')
+    self.cols = getValueFromDict(args, 'cols')
+    self.num_actions = getValueFromDict(args, 'num_actions')
+    self.cuda = getValueFromDict(args, 'cuda', True)
+    self.epochs = getValueFromDict(args, 'epochs', 10)
+    self.batch_size = getValueFromDict(args, 'batch_size', 64)
     # Network
     self.net = Connect4Net(args)
     # Use CUDA?

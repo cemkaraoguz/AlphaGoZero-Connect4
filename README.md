@@ -1,5 +1,5 @@
 # AlphaZero-Connect4
-AlphaZero PyTorch implementation for Connect4 game.
+A minimalistic AlphaZero PyTorch implementation with Connect4 game as showcase.
 
 Adapted from 
 https://github.com/suragnair/alpha-zero-general

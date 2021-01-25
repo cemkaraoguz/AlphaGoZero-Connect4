@@ -1,4 +1,4 @@
-from Utils import getCanonicalForm, isGameEnded
+from Utils import getCanonicalForm, isGameEnded, getValueFromDict
 import math
 import numpy as np
 
@@ -12,9 +12,9 @@ class MCTS():
   
   def __init__(self, nnet, args):
     self.nnet = nnet
-    self.numMCTSSims = args['numMCTSSims']
-    self.cpuct = args['cpuct']
-    self.num_actions = args['num_actions']
+    self.numMCTSSims = getValueFromDict(args, 'numMCTSSims')
+    self.cpuct = getValueFromDict(args, 'cpuct')
+    self.num_actions = getValueFromDict(args, 'num_actions')
     self.game = None
     self.Qsa = {}  # stores Q values for s,a (as defined in the paper)
     self.Nsa = {}  # stores #times edge s,a was visited

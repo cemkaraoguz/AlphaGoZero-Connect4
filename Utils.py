@@ -42,8 +42,19 @@ def loadTrainExamples(folder, iteration):
     with open(examplesFile, "rb") as f:
       return Unpickler(f).load()
 
+def getValueFromDict(indict, key, defaultVal=None):
+  if key in indict.keys():
+    return indict[key]
+  else:
+    if defaultVal is None:
+      raise KeyError
+    else:
+      return defaultVal
+    
 class AverageMeter(object):
-  """From https://github.com/pytorch/examples/blob/master/imagenet/main.py"""
+  '''
+  From https://github.com/pytorch/examples/blob/master/imagenet/main.py
+  '''
 
   def __init__(self):
     self.val = 0
