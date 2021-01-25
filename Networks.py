@@ -62,10 +62,12 @@ class Connect4NetWrapper():
     # Network
     self.net = Connect4Net(args)
     # Use CUDA?
-    if self.cuda:
+    if self.cuda and torch.cuda.is_available():
       self.net.cuda()
+    else:
+      self.cuda = False
  
-  def predict(self, board):
+  def predict(self, board, device='cuda'):
     board = torch.FloatTensor(board.astype(np.float64))
     if self.cuda: 
       board = board.contiguous().cuda()
@@ -79,7 +81,7 @@ class Connect4NetWrapper():
     optimizer = optim.Adam(self.net.parameters()) # TODO
 
     for epoch in range(self.epochs):
-      print('EPOCH ::: ' + str(epoch + 1))
+      print('Epoch : ' + str(epoch + 1))
       self.net.train()
       pi_losses = AverageMeter()
       v_losses = AverageMeter()
@@ -129,7 +131,8 @@ class Connect4NetWrapper():
   def load_checkpoint(self, folder='checkpoint', filename='checkpoint.net.tar'):
     filepath = os.path.join(folder, filename)
     if not os.path.exists(filepath):
-        raise ("No model in path {}".format(filepath))
+        raise FileNotFoundError("No model in path {}".format(filepath))
+    print("Loading model file {}".format(filepath))
     map_location = None if self.cuda else 'cpu'
     checkpoint = torch.load(filepath, map_location=map_location)
     self.net.load_state_dict(checkpoint['state_dict'])

@@ -32,7 +32,16 @@ def saveTrainExamples(folder, iteration, trainExamples):
   filename = os.path.join(folder, getCheckpointFilename(iteration) + ".examples")
   with open(filename, "wb+") as f:
       Pickler(f).dump(trainExamples)
-      
+
+def loadTrainExamples(folder, iteration):
+  examplesFile = os.path.join(folder, getCheckpointFilename(iteration) + ".examples")
+  if not os.path.isfile(examplesFile):
+     raise FileNotFoundError("file does not exist {}".format(examplesFile))
+  else:
+    print("Loading training examples {}".format(examplesFile))
+    with open(examplesFile, "rb") as f:
+      return Unpickler(f).load()
+
 class AverageMeter(object):
   """From https://github.com/pytorch/examples/blob/master/imagenet/main.py"""
 
