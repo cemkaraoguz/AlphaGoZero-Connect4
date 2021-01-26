@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 from Networks import Connect4NetWrapper
 from Utils import getCurrentPlayer, getCanonicalForm
-from Agents import AlphaZeroAgent, RandomPlayAgent
+from Agents import AlphaZeroAgent, RandomPlayAgent, OSLAAgent
 
 def executeTest(game, agents):
   agents[0].reset()
@@ -48,8 +48,10 @@ if __name__=="__main__":
   connect4net.load_checkpoint(folder=args['checkpointFolder'])
   agent_alphazero = AlphaZeroAgent(connect4net, args)
   agent_random = RandomPlayAgent()
+  agent_osla = OSLAAgent()
   # Select agents to play
-  agents = [agent_alphazero, agent_random]
+  #agents = [agent_alphazero, agent_random]
+  agents = [agent_alphazero, agent_osla]
   # Run tests
   num_wins = np.zeros(2)
   nTests_half = nTests//2
