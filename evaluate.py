@@ -2,11 +2,13 @@ import torch
 import gym
 import gym_connect4
 import random
+import numpy as np
+from tqdm import tqdm
 from Networks import Connect4NetWrapper
 from Utils import getCurrentPlayer, getCanonicalForm
-from Agents import AlphaZeroAgent, HumanAgent
+from Agents import AlphaZeroAgent, RandomPlayAgent
 
-def executeGame(game, agents):
+def executeTest(game, agents):
   agents[0].reset()
   agents[1].reset()
   observation = game.reset()
@@ -16,21 +18,11 @@ def executeGame(game, agents):
   while not done:
     episodeStep += 1
     canonicalBoard = getCanonicalForm(game)
-    game.render()
-    action = agents[currentPlayer].selectAction(game)
-    
-    print("player {} {} takes action {}".format(currentPlayer, agents[currentPlayer].name, action))
-    
+    action = agents[currentPlayer].selectAction(game)    
     observation, reward, done, info = game.step(action)
     currentPlayer = game.current_player
-    if done:
-      game.render()
-      print("Game Over")
-      if game.winner==-1:
-        print("Draw!")
-      else:
-        print("player {} {} wins!".format(game.winner, agents[game.winner].name))
-      
+  return game.winner
+
 if __name__=="__main__":
 
   args = {
@@ -49,15 +41,40 @@ if __name__=="__main__":
     'checkpointFolder': "./data",
   }
   
+  nTests = 100
+  
   game = gym.make("Connect4-v0", width=args['cols'], height=args['rows'])
   connect4net = Connect4NetWrapper(args)    
   connect4net.load_checkpoint(folder=args['checkpointFolder'])
   agent_alphazero = AlphaZeroAgent(connect4net, args)
-  agent_human = HumanAgent()
+  agent_random = RandomPlayAgent()
   # Select agents to play
-  agents = [agent_alphazero, agent_human]
-  # Shuffle agents to randomize starting agent
-  random.shuffle(agents)
-  # Play the game
-  executeGame(game, agents)
+  agents = [agent_alphazero, agent_random]
+  # Run tests
+  num_wins = np.zeros(2)
+  nTests_half = nTests//2
+  t = tqdm(range(nTests_half), desc='Evaluation 1/2')
+  for _ in t:
+    winner = executeTest(game, agents)
+    if winner==-1:
+      #print("Draw!")
+      pass
+    else:
+      num_wins[winner]+=1
+  # Reverse the agents
+  agents.reverse()
+  num_wins = np.flip(num_wins)
+  t = tqdm(range(nTests-nTests_half), desc='Evaluation 2/2')
+  for _ in t:
+    winner = executeTest(game, agents)
+    if winner==-1:
+      #print("Draw!")
+      pass
+    else:
+      num_wins[winner]+=1
+  
+  print()
+  for i, agent in enumerate(agents):
+    print("Agent {} win rate : {}%".format(agent.name, round(num_wins[i]*100/nTests)))
+  print("Draw rate : {}".format(round((nTests-num_wins.sum())*100/nTests)))
   

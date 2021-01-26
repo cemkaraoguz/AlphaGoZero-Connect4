@@ -66,10 +66,6 @@ class MCTS():
       Returns:
           v: the negative of the value of the current canonicalBoard
       """
-      #print("in MCTS search")
-      #self.game.render()
-      #print(isGameEnded(self.game))
-      
       canonicalBoard = getCanonicalForm(self.game)
       s = canonicalBoard.tostring()
 
@@ -77,20 +73,15 @@ class MCTS():
         self.Es[s] = isGameEnded(self.game)
       if self.Es[s] != 0:
         # terminal node
-        #print("in MCTS search: terminal node")
-        #input()
         return -self.Es[s]
 
       if s not in self.Ps:
         # leaf node
-        #print("in MCTS search: leaf node")
-        #input()
         self.Ps[s], v = self.nnet.predict(canonicalBoard)
         valids = np.zeros(self.num_actions)
         valids[self.game.get_moves()]=1
         self.Ps[s] = self.Ps[s] * valids  # masking invalid moves
-        #print(self.game.get_moves(), self.Ps[s])
-        sum_Ps_s = np.sum(self.Ps[s]) # TODO
+        sum_Ps_s = np.sum(self.Ps[s]) 
         if sum_Ps_s > 0:
           self.Ps[s] /= sum_Ps_s  # renormalize
         else:
@@ -99,13 +90,10 @@ class MCTS():
           # If you have got dozens or hundreds of these messages you should pay attention to your NNet and/or training process.   
           self.Ps[s] = self.Ps[s] + valids
           self.Ps[s] /= np.sum(self.Ps[s])
-          print('a')
         self.Vs[s] = valids
         self.Ns[s] = 0
         return -v
 
-      #print("in MCTS search: inbetween node")
-      #input()
       valids = self.Vs[s]
       cur_best = -float('inf')
       best_act = -1

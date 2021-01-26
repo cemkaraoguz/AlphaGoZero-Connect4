@@ -48,11 +48,11 @@ if __name__=="__main__":
     # MCTS
     'numMCTSSims': 25,                    # Number of games moves for MCTS to simulate.
     'cpuct': 1,
-    'tempThreshold': 0,
+    'tempThreshold': 10,
     'maxlenQueue': 200000,                # Max number of game examples acquired from self plays.
     'maxItersForTrainExamplesHist': 20,   # Size of buffer for total training samples in terms of iterations
     'checkpointFolder': "./data",
-    'checkpointLoadIteration': 147,
+    'checkpointLoadIteration': 0,
   }
   
   game = gym.make("Connect4-v0", width=args['cols'], height=args['rows'])
