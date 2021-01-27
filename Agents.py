@@ -60,7 +60,7 @@ class OSLAAgent(PlayAgent):
     # Get list of valid moves
     available_actions = game.get_moves()
     # Get state info
-    canonicalBoard = np.transpose(np.flip(getCanonicalForm(game)))
+    canonicalBoard = getCanonicalForm(game)
     # Use the heuristic to score each possible board state in the next turn
     scores = dict(zip(available_actions, [self.getActionScore(canonicalBoard, col, 1) for col in available_actions]))
     # Get actions that maximize the heuristic score

@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from pickle import Pickler, Unpickler
 
 def isGameEnded(game):
@@ -18,7 +19,7 @@ def isGameEnded(game):
 def getCanonicalForm(game):
   observation = game.get_player_observations()
   player = game.current_player
-  return observation[player][1]+observation[player][2]*-1
+  return np.transpose(np.flip(observation[player][1]+observation[player][2]*-1))
   
 def getCurrentPlayer(game):
   return 1 if game.current_player==0 else -1
@@ -42,6 +43,22 @@ def loadTrainExamples(folder, iteration):
     with open(examplesFile, "rb") as f:
       return Unpickler(f).load()
 
+def saveLogData(logdata, folder):
+  filepath = os.path.join(folder, 'logdata.pkl')
+  if not os.path.exists(folder):
+      os.mkdir(folder)
+  with open(filepath, "wb+") as f:
+    Pickler(f).dump(logdata)
+
+def loadLogData(folder):
+  filepath = os.path.join(folder, 'logdata.pkl')
+  if not os.path.exists(filepath):
+      raise FileNotFoundError("No log data in path {}".format(filepath))
+  else:
+    print("Loading log data {}".format(filepath))
+    with open(filepath, "rb") as f:
+      return Unpickler(f).load()
+    
 def getValueFromDict(indict, key, defaultVal=None):
   if key in indict.keys():
     return indict[key]

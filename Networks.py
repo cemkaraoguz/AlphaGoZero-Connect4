@@ -67,7 +67,7 @@ class Connect4NetWrapper():
     else:
       self.cuda = False
  
-  def predict(self, board, device='cuda'):
+  def predict(self, board):
     board = torch.FloatTensor(board.astype(np.float64))
     if self.cuda: 
       board = board.contiguous().cuda()
@@ -116,6 +116,8 @@ class Connect4NetWrapper():
         total_loss.backward()
         optimizer.step()
         
+    return pi_losses, v_losses
+  
   def loss_pi(self, targets, outputs):
     return -torch.sum(targets * outputs) / targets.size()[0]
 
