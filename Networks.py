@@ -78,7 +78,7 @@ class Connect4NetWrapper():
     return torch.exp(pi).data.cpu().numpy()[0], v.data.cpu().numpy()[0]
     
   def train(self, examples):
-    optimizer = optim.Adam(self.net.parameters()) # TODO
+    optimizer = optim.AdamW(self.net.parameters())
 
     for epoch in range(self.epochs):
       print('Epoch : ' + str(epoch + 1))

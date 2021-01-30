@@ -52,6 +52,7 @@ if __name__=="__main__":
     'numMCTSSims': 50,                    # Number of games moves for MCTS to simulate.
     'cpuct': 4,
     'tempThreshold': 15,
+    'doScaleReward': False,               # Scale reward w.r.t game length?
     'maxlenQueue': 200000,                # Max number of game examples acquired from self plays.
     'maxItersForTrainExamplesHist': 20,   # Size of buffer for total training samples in terms of iterations
     'checkpointFolder': "./data",

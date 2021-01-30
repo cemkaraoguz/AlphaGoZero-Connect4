@@ -21,8 +21,17 @@ def getCanonicalForm(game):
   player = game.current_player
   return np.transpose(np.flip(observation[player][1]+observation[player][2]*-1))
   
+def getStateRepresentation(game):
+  observation = game.get_player_observations()
+  player = game.current_player
+  return np.array([np.transpose(np.flip(observation[player][1])), 
+    np.transpose(np.flip(observation[player][2]))])
+  
 def getCurrentPlayer(game):
   return 1 if game.current_player==0 else -1
+  
+def getPlayLength(game):
+  return np.sum(game.board>=0)
   
 def getCheckpointFilename(iteration):
   return 'checkpoint_' + str(iteration) + '.pkl'

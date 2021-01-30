@@ -39,7 +39,7 @@ if __name__=="__main__":
     'rows': 6,
     'num_actions': 7,
     # MCTS
-    'numMCTSSims': 25,                    # Number of games moves for MCTS to simulate.
+    'numMCTSSims': 25,
     'cpuct': 1,
     'tempThreshold': 0,    
     # NN

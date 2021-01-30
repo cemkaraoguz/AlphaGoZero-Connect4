@@ -1,4 +1,5 @@
-from Utils import getCanonicalForm, isGameEnded, getValueFromDict
+from Utils import getValueFromDict
+from Utils import getCanonicalForm, isGameEnded, getPlayLength
 import math
 import numpy as np
 
@@ -15,6 +16,7 @@ class MCTS():
     self.numMCTSSims = getValueFromDict(args, 'numMCTSSims')
     self.cpuct = getValueFromDict(args, 'cpuct')
     self.num_actions = getValueFromDict(args, 'num_actions')
+    self.doScaleReward = getValueFromDict(args, 'doScaleReward', False)
     self.game = None
     self.Qsa = {}  # stores Q values for s,a (as defined in the paper)
     self.Nsa = {}  # stores #times edge s,a was visited
@@ -36,7 +38,7 @@ class MCTS():
       self.search()
       
     canonicalBoard = getCanonicalForm(game)
-    s = canonicalBoard.tostring()
+    s = canonicalBoard.tostring() # Root node
     counts = [self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.num_actions)]
     if temp == 0:
       bestAs = np.array(np.argwhere(counts == np.max(counts))).flatten()
@@ -73,7 +75,12 @@ class MCTS():
         self.Es[s] = isGameEnded(self.game)
       if self.Es[s] != 0:
         # terminal node
-        return -self.Es[s]
+        if self.doScaleReward and self.Es[s]>0: # TODO: check + or -
+          # Scale the reward to a value between 0.1 and 1.0 proportional to game 1/game length
+          reward_scaler = ((-1*getPlayLength(self.game))+46)/39
+        else:
+          reward_scaler = 1.0
+        return -self.Es[s]*reward_scaler
 
       if s not in self.Ps:
         # leaf node
