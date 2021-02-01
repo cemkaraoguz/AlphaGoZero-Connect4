@@ -4,9 +4,9 @@ from random import shuffle
 from collections import deque
 from Networks import Connect4NetWrapper
 from TreeSearch import MCTS
-from Utils import getCurrentPlayer, getCanonicalForm
+from Utils import getCurrentPlayer, getStateRepresentation
 from Utils import saveTrainExamples, loadTrainExamples
-from Utils import loadLogData, saveLogData
+from Utils import loadLogData, saveLogData, prepareTrainingData
 from evaluate import evaluate
 import torch
 import gym
@@ -22,10 +22,10 @@ def executeEpisode(game, mcts, tempThreshold):
   done = False
   while not done:
     episodeStep += 1
-    canonicalBoard = getCanonicalForm(game)
+    state = getStateRepresentation(game)
     temp = int(episodeStep < tempThreshold)
     pi = mcts.getActionProb(game, temp=temp)
-    trainExamples.append([canonicalBoard, currentPlayer, pi, None])
+    trainExamples.append([state, currentPlayer, pi, None])
     action = np.random.choice(len(pi), p=pi)
     observation, reward, done, info = game.step(action)
     currentPlayer = getCurrentPlayer(game)
@@ -53,12 +53,18 @@ if __name__=="__main__":
     'cpuct': 4,
     'tempThreshold': 15,
     'doScaleReward': False,               # Scale reward w.r.t game length?
+    'w_noise': 0.5,                       # Weight of Dirichlet noise added to the priors in the root node of MCTS
+    'alpha': 0.5,                         # Dirichlet noise parameter
     'maxlenQueue': 200000,                # Max number of game examples acquired from self plays.
     'maxItersForTrainExamplesHist': 20,   # Size of buffer for total training samples in terms of iterations
     'checkpointFolder': "./data",
     'checkpointLoadIteration': 0,
     'num_tests': 100,
+    'comments': "AdamW+Dirichlet+State Aggregation",
   }
+  args_test = args.copy()
+  args_test['w_noise'] = 0.0
+  
   game = gym.make("Connect4-v0", width=args['cols'], height=args['rows'])
   connect4net = Connect4NetWrapper(args)
   # Check if we continue from a checkpoint
@@ -90,14 +96,18 @@ if __name__=="__main__":
     saveTrainExamples(args['checkpointFolder'], i-1, trainExamplesHistory)
     connect4net.save_checkpoint(folder=args['checkpointFolder'], filename='checkpoint.net.tar')
     # shuffle examples before training
+    '''
     trainExamples = []
     for e in trainExamplesHistory:
       trainExamples.extend(e)
     shuffle(trainExamples)
+    '''
+    trainExamples = prepareTrainingData(trainExamplesHistory)
+    
     # Training
     pi_losses, v_losses = connect4net.train(trainExamples)
     # Testing
-    num_wins, num_draws = evaluate(args, connect4net, opponent="OSLA")
+    num_wins, num_draws = evaluate(args_test, connect4net, opponent="OSLA")
     print("Win rate : {}% Draw rate : {}%".format(round(num_wins*100/args['num_tests']), round(num_draws*100/args['num_tests'])))
     # Logging
     if i not in log.keys():

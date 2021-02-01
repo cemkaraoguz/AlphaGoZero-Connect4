@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from random import shuffle
 from pickle import Pickler, Unpickler
 
 def isGameEnded(game):
@@ -22,17 +23,36 @@ def getCanonicalForm(game):
   return np.transpose(np.flip(observation[player][1]+observation[player][2]*-1))
   
 def getStateRepresentation(game):
-  observation = game.get_player_observations()
-  player = game.current_player
-  return np.array([np.transpose(np.flip(observation[player][1])), 
-    np.transpose(np.flip(observation[player][2]))])
+  return getCanonicalForm(game)
   
 def getCurrentPlayer(game):
   return 1 if game.current_player==0 else -1
   
 def getPlayLength(game):
   return np.sum(game.board>=0)
-  
+
+def prepareTrainingData(trainExamplesHistory):
+  trainExamples = []
+  if len(trainExamplesHistory)==0:
+    return trainExamples
+  sampleDict = {}
+  board_shape = trainExamplesHistory[0][0][0].shape
+  for samples_iteration in trainExamplesHistory:
+    for sample in samples_iteration:
+      state = sample[0].tobytes()
+      pi = sample[1]
+      reward = sample[2] 
+      if state not in sampleDict.keys():
+        sampleDict[state] = []
+      sampleDict[state].append([pi,reward])    
+  for k, v in sampleDict.items():
+    pi_avg = np.mean([v[i][0] for i in range(len(v))],0)
+    reward_avg = np.mean([v[i][1] for i in range(len(v))])
+    sample = [np.frombuffer(k, dtype=int).reshape(board_shape), pi_avg, reward_avg]
+    trainExamples.append(sample)
+  shuffle(trainExamples)
+  return trainExamples
+
 def getCheckpointFilename(iteration):
   return 'checkpoint_' + str(iteration) + '.pkl'
 

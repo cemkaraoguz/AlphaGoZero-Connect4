@@ -5,7 +5,7 @@ import random
 import numpy as np
 from tqdm import tqdm
 from Networks import Connect4NetWrapper
-from Utils import getCurrentPlayer, getCanonicalForm, getValueFromDict
+from Utils import getValueFromDict
 from Agents import AlphaZeroAgent, RandomPlayAgent, OSLAAgent
 
 def executeTest(game, agents):
@@ -17,7 +17,6 @@ def executeTest(game, agents):
   done = False
   while not done:
     episodeStep += 1
-    canonicalBoard = getCanonicalForm(game)
     action = agents[currentPlayer].selectAction(game)    
     observation, reward, done, info = game.step(action)
     currentPlayer = game.current_player
@@ -80,6 +79,7 @@ if __name__=="__main__":
     'numMCTSSims': 25,
     'cpuct': 4,
     'tempThreshold': 0,
+    'alpha': 1.0,
     # NN
     'num_channels': 512,
     'dropout': 0.3,

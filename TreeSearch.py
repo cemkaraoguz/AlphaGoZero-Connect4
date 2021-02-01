@@ -1,5 +1,5 @@
 from Utils import getValueFromDict
-from Utils import getCanonicalForm, isGameEnded, getPlayLength
+from Utils import getStateRepresentation, isGameEnded, getPlayLength
 import math
 import numpy as np
 
@@ -17,6 +17,9 @@ class MCTS():
     self.cpuct = getValueFromDict(args, 'cpuct')
     self.num_actions = getValueFromDict(args, 'num_actions')
     self.doScaleReward = getValueFromDict(args, 'doScaleReward', False)
+    self.w_noise = getValueFromDict(args, 'w_noise')
+    assert(self.w_noise>=0 and self.w_noise<=1)
+    self.alpha = getValueFromDict(args, 'alpha')
     self.game = None
     self.Qsa = {}  # stores Q values for s,a (as defined in the paper)
     self.Nsa = {}  # stores #times edge s,a was visited
@@ -35,10 +38,10 @@ class MCTS():
     """    
     for i in range(self.numMCTSSims):
       self.game = game.clone()      
-      self.search()
+      self.search(isRootNode=True)
       
-    canonicalBoard = getCanonicalForm(game)
-    s = canonicalBoard.tostring() # Root node
+    state = getStateRepresentation(game)
+    s = state.tostring() # Root node
     counts = [self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.num_actions)]
     if temp == 0:
       bestAs = np.array(np.argwhere(counts == np.max(counts))).flatten()
@@ -52,7 +55,7 @@ class MCTS():
       probs = [x / counts_sum for x in counts]
       return probs
 
-  def search(self):
+  def search(self, isRootNode):
       """
       This function performs one iteration of MCTS. It is recursively called
       till a leaf node is found. The action chosen at each node is one that
@@ -68,8 +71,8 @@ class MCTS():
       Returns:
           v: the negative of the value of the current canonicalBoard
       """
-      canonicalBoard = getCanonicalForm(self.game)
-      s = canonicalBoard.tostring()
+      state = getStateRepresentation(self.game)
+      s = state.tostring()
 
       if s not in self.Es:
         self.Es[s] = isGameEnded(self.game)
@@ -84,7 +87,9 @@ class MCTS():
 
       if s not in self.Ps:
         # leaf node
-        self.Ps[s], v = self.nnet.predict(canonicalBoard)
+        self.Ps[s], v = self.nnet.predict(state)
+        if isRootNode:
+          self.Ps[s] = (1.0-self.w_noise)*self.Ps[s] + self.w_noise*np.random.dirichlet(np.full(self.num_actions, self.alpha))
         valids = np.zeros(self.num_actions)
         valids[self.game.get_moves()]=1
         self.Ps[s] = self.Ps[s] * valids  # masking invalid moves
@@ -117,7 +122,7 @@ class MCTS():
 
       a = best_act
       observation, reward, done, info = self.game.step(a)      
-      v = self.search()
+      v = self.search(isRootNode=False)
 
       if (s, a) in self.Qsa:
         self.Qsa[(s, a)] = (self.Nsa[(s, a)] * self.Qsa[(s, a)] + v) / (self.Nsa[(s, a)] + 1)

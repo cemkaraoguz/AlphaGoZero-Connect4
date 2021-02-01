@@ -3,7 +3,6 @@ import gym
 import gym_connect4
 import random
 from Networks import Connect4NetWrapper
-from Utils import getCurrentPlayer, getCanonicalForm
 from Agents import AlphaZeroAgent, HumanAgent
 
 def executeGame(game, agents):
@@ -15,7 +14,6 @@ def executeGame(game, agents):
   done = False
   while not done:
     episodeStep += 1
-    canonicalBoard = getCanonicalForm(game)
     game.render()
     action = agents[currentPlayer].selectAction(game)
     
@@ -41,7 +39,8 @@ if __name__=="__main__":
     # MCTS
     'numMCTSSims': 25,
     'cpuct': 1,
-    'tempThreshold': 0,    
+    'tempThreshold': 0,
+    'alpha': 1.0,
     # NN
     'num_channels': 512,
     'dropout': 0.3,
