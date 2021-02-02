@@ -78,9 +78,9 @@ class MCTS():
         self.Es[s] = isGameEnded(self.game)
       if self.Es[s] != 0:
         # terminal node
-        if self.doScaleReward and self.Es[s]>0: # TODO: check + or -
+        if self.doScaleReward and self.Es[s]>0:
           # Scale the reward to a value between 0.1 and 1.0 proportional to game 1/game length
-          reward_scaler = ((-1*getPlayLength(self.game))+46)/39
+          reward_scaler = ((-1*getPlayLength(self.game))+46)/35
         else:
           reward_scaler = 1.0
         return -self.Es[s]*reward_scaler

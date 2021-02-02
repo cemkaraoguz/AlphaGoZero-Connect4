@@ -50,9 +50,9 @@ if __name__=="__main__":
     'batch_size': 64,                     # Batch size for training
     # MCTS
     'numMCTSSims': 50,                    # Number of games moves for MCTS to simulate.
-    'cpuct': 4,
-    'tempThreshold': 15,
-    'doScaleReward': False,               # Scale reward w.r.t game length?
+    'cpuct': 4,                           # Upper confidence bound parameter
+    'tempThreshold': 15,                  # Temperature for action selection
+    'doScaleReward': True,                # Scale reward w.r.t game length?
     'w_noise': 0.5,                       # Weight of Dirichlet noise added to the priors in the root node of MCTS
     'alpha': 0.5,                         # Dirichlet noise parameter
     'maxlenQueue': 200000,                # Max number of game examples acquired from self plays.
@@ -60,7 +60,7 @@ if __name__=="__main__":
     'checkpointFolder': "./data",
     'checkpointLoadIteration': 0,
     'num_tests': 100,
-    'comments': "AdamW+Dirichlet+State Aggregation",
+    'comments': "AdamW+Dirichlet+State Aggregation+Variable reward",
   }
   args_test = args.copy()
   args_test['w_noise'] = 0.0
@@ -96,14 +96,7 @@ if __name__=="__main__":
     saveTrainExamples(args['checkpointFolder'], i-1, trainExamplesHistory)
     connect4net.save_checkpoint(folder=args['checkpointFolder'], filename='checkpoint.net.tar')
     # shuffle examples before training
-    '''
-    trainExamples = []
-    for e in trainExamplesHistory:
-      trainExamples.extend(e)
-    shuffle(trainExamples)
-    '''
-    trainExamples = prepareTrainingData(trainExamplesHistory)
-    
+    trainExamples = prepareTrainingData(trainExamplesHistory)    
     # Training
     pi_losses, v_losses = connect4net.train(trainExamples)
     # Testing

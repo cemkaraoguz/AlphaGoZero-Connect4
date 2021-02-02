@@ -40,7 +40,8 @@ if __name__=="__main__":
     'numMCTSSims': 25,
     'cpuct': 1,
     'tempThreshold': 0,
-    'alpha': 1.0,
+    'w_noise': 0.0,
+    'alpha': 0.5,
     # NN
     'num_channels': 512,
     'dropout': 0.3,
