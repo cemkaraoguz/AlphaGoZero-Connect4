@@ -1,7 +1,7 @@
 # AlphaZero-Connect4
 This mini project explores [AlphaZero](https://arxiv.org/pdf/1712.01815.pdf) framework with several simple extensions on top of it using Connect4 game as the use case.
 
-## Dependencies:
+## Dependencies
 - pytorch 1.7.1
 - gym 0.18.0
 - gym_connect4 0.8
@@ -50,7 +50,7 @@ As we analyze the training data more, we can also see that the average game leng
 With this setting, we achieve reducing average game length.
 
 ## Conclusions
-Here are all the results put together:
+Here are all stages put together:
 
 <img src="figures/Figure_9.png" width=500><br>
 <img src="figures/Figure_10.png" width=500><br>
