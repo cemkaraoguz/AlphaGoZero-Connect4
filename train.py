@@ -48,6 +48,7 @@ if __name__=="__main__":
     'numEps': 100,                        # Number of complete self-play games to simulate during a new iteration
     'epochs': 10,                         # Number of learning epochs
     'batch_size': 64,                     # Batch size for training
+    'doStateAggregation': True,
     # MCTS
     'numMCTSSims': 50,                    # Number of games moves for MCTS to simulate.
     'cpuct': 4,                           # Upper confidence bound parameter
@@ -62,46 +63,57 @@ if __name__=="__main__":
     'num_tests': 100,
     'comments': "AdamW+Dirichlet+State Aggregation+Variable reward",
   }
-  args_test = args.copy()
-  args_test['w_noise'] = 0.0
   
   game = gym.make("Connect4-v0", width=args['cols'], height=args['rows'])
-  connect4net = Connect4NetWrapper(args)
+  
   # Check if we continue from a checkpoint
   if args['checkpointLoadIteration']>0:
     trainExamplesHistory = loadTrainExamples(args['checkpointFolder'], args['checkpointLoadIteration'])
+    log = loadLogData(folder=args['checkpointFolder'])
+    args_train = log['args'].copy()
+    connect4net = Connect4NetWrapper(args_train)
     connect4net.load_checkpoint(folder=args['checkpointFolder'])
     iteration_start = args['checkpointLoadIteration']+1
-    log = loadLogData(folder=args['checkpointFolder'])
   else:
+    args_train = args.copy()
+    connect4net = Connect4NetWrapper(args_train)
     trainExamplesHistory = []
     iteration_start = 1
     log = {}
-    log['args'] = args
-  
-  for i in range(iteration_start, args['numIters'] + 1): 
+    log['args'] = args_train
+
+  args_test = args_train.copy()
+  args_test['w_noise'] = 0.0
+
+  for i in range(iteration_start, args_train['numIters'] + 1): 
     
     print("Iteration:", i)
     
-    trainExamplesFromSelfPlay = deque([], maxlen=args['maxlenQueue'])
-    for _ in tqdm(range(args['numEps']), desc="Self Play"):
+    trainExamplesFromSelfPlay = deque([], maxlen=args_train['maxlenQueue'])
+    for _ in tqdm(range(args_train['numEps']), desc="Self Play"):
       # Execute self plays
-      mcts = MCTS(connect4net, args)
-      trainExamplesFromSelfPlay += executeEpisode(game, mcts, args['tempThreshold'])
+      mcts = MCTS(connect4net, args_train)
+      trainExamplesFromSelfPlay += executeEpisode(game, mcts, args_train['tempThreshold'])
     # Save trajectories from self-plays for training
     trainExamplesHistory.append(trainExamplesFromSelfPlay)
-    if len(trainExamplesHistory) > args['maxItersForTrainExamplesHist']:
+    if len(trainExamplesHistory) > args_train['maxItersForTrainExamplesHist']:
       trainExamplesHistory.pop(0)
     # Save checkpoint
-    saveTrainExamples(args['checkpointFolder'], i-1, trainExamplesHistory)
-    connect4net.save_checkpoint(folder=args['checkpointFolder'], filename='checkpoint.net.tar')
-    # shuffle examples before training
-    trainExamples = prepareTrainingData(trainExamplesHistory)    
+    saveTrainExamples(args_train['checkpointFolder'], i-1, trainExamplesHistory)
+    connect4net.save_checkpoint(folder=args_train['checkpointFolder'], filename='checkpoint.net.tar')
+    # prepare examples before training
+    if args_train['doStateAggregation']:
+      trainExamples = prepareTrainingData(trainExamplesHistory) 
+    else:
+      trainExamples = []
+      for e in trainExamplesHistory:
+        trainExamples.extend(e)
+      shuffle(trainExamples)
     # Training
     pi_losses, v_losses = connect4net.train(trainExamples)
     # Testing
     num_wins, num_draws = evaluate(args_test, connect4net, opponent="OSLA")
-    print("Win rate : {}% Draw rate : {}%".format(round(num_wins*100/args['num_tests']), round(num_draws*100/args['num_tests'])))
+    print("Win rate : {}% Draw rate : {}%".format(round(num_wins*100/args_train['num_tests']), round(num_draws*100/args_train['num_tests'])))
     # Logging
     if i not in log.keys():
       log[i] = {}
@@ -110,7 +122,7 @@ if __name__=="__main__":
     log[i]['v_losses'] = v_losses.avg
     log[i]['num_wins'] = num_wins
     log[i]['num_draws'] = num_draws
-    saveLogData(log, args['checkpointFolder'])
+    saveLogData(log, args_train['checkpointFolder'])
     
   game.close()
   

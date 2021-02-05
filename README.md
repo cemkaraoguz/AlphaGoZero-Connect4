@@ -28,7 +28,7 @@ If we analyze the states visited during the training phase, we will notice that 
 <img src="figures/Figure_3.png" width=500><br>
 <img src="figures/Figure_4.png" width=500><br>
 
-The ratio of unique states stays higher than the baseline and AdamW cases indicating that the system still explores other states. However, this comes with an expense of slight performance drop (note that Dirichlet noise is turned of during testing). In a game like Connect4 where the complexity of the state space is relatively low, initial randomness of the network weights might induce enough exploration to find an optimal policy. The impact of Dirichlet noise is more prominent in games like Chess or Go.  
+The ratio of unique states stays higher than the baseline and AdamW cases indicating that the system still explores other states. However, agent also learns slowly in this case as can be seen from the performance curve above (note that Dirichlet noise is turned of during testing). A better strategy could be slowly decreasing the impact of the noise with time. Also, in a game like Connect4 where the complexity of the state space is relatively low, initial randomness of the network weights might induce enough exploration to find an optimal policy. The impact of Dirichlet noise is more prominent in games like Chess or Go.  
 
 ## State aggregation
 The decrease of unique states over time reveals an interesting fact: as training progresses the network is being trained with more similar states. However, the variance in the target values of these states may cripple the training progress. As proposed [here](https://medium.com/oracledevs/lessons-from-alpha-zero-part-6-hyperparameter-tuning-b1cfcbe4ca9a) we can average the target values seen for each state to help the network learn faster:
@@ -40,14 +40,14 @@ First, sanity check: the total number of samples in the buffer is minimum in the
 <img src="figures/Figure_6.png" width=500><br>
 <img src="figures/Figure_7.png" width=500><br>
 
-As we can see from the loss function, the network learns much faster and we get the best performance by a small margin.
+As we can see from the loss function, the network learns much faster and we get a better performance by a small margin.
 
 ## Variable reward
 As we analyze the training data more, we can also see that the average game length is increasing with the training time. This indicates that the policy being learned favors longer games. How can we impose network to win as soon as possible?  Instead of {-1, 1} reward scheme, we can weight the reward proportional to the 1/game length, as also done in [this article](https://medium.com/oracledevs/lessons-from-alphazero-connect-four-e4a0ae82af68):
 
 <img src="figures/Figure_8.png" width=500><br>
 
-With this setting, we achieve reducing average game length.
+With this setting, we can keep the average game length shorter from early on.
 
 ## Conclusions
 Here are all stages put together:
