@@ -14,12 +14,13 @@ class ConvNet(nn.Module):
     self.rows = getValueFromDict(args, 'rows')
     self.cols = getValueFromDict(args, 'cols')
     self.num_actions = getValueFromDict(args, 'num_actions')
+    self.in_channels = getValueFromDict(args, 'in_channels')
     self.num_channels = getValueFromDict(args, 'num_channels')
     self.dropout = getValueFromDict(args, 'dropout')
     # Internal structures
     super(ConvNet, self).__init__()
     # Convolution layers
-    self.conv1 = nn.Conv2d(1, self.num_channels, 3, stride=1, padding=1)
+    self.conv1 = nn.Conv2d(self.in_channels, self.num_channels, 3, stride=1, padding=1)
     self.conv2 = nn.Conv2d(self.num_channels, self.num_channels, 3, stride=1, padding=1)
     self.conv3 = nn.Conv2d(self.num_channels, self.num_channels, 3, stride=1)
     self.conv4 = nn.Conv2d(self.num_channels, self.num_channels, 3, stride=1)
@@ -38,7 +39,7 @@ class ConvNet(nn.Module):
 
   def forward(self, s):
     #                                                            s: batch_size x cols x rows
-    s = s.view(-1, 1, self.cols, self.rows)                      # batch_size x 1 x cols x rows
+    s = s.view(-1, self.in_channels, self.cols, self.rows)       # batch_size x 1 x cols x rows
     s = F.relu(self.bn1(self.conv1(s)))                          # batch_size x num_channels x cols x rows
     s = F.relu(self.bn2(self.conv2(s)))                          # batch_size x num_channels x cols x rows
     s = F.relu(self.bn3(self.conv3(s)))                          # batch_size x num_channels x (cols-2) x (rows-2)
@@ -117,7 +118,7 @@ class ResNet(nn.Module):
     out = F.relu(out)
     out = self.res_blocks(out)
     out = self.pool2(out)
-    out = torch.flatten(out, 1)
+    out = torch.flatten(out,1)
     pi = self.fc1(out)
     v = self.fc2(out)
     return F.log_softmax(pi, dim=1), torch.tanh(v)

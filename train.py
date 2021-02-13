@@ -49,7 +49,7 @@ if __name__=="__main__":
     'num_res_blocks': [3,3,3],
     # Convnet parameters
     #'num_channels': 512,
-    #'dropout': 0.3,
+    'dropout': 0.3,
     # Training
     'numIters': 200,                      # Number of iterations
     'numEps': 100,                        # Number of complete self-play games to simulate during a new iteration
