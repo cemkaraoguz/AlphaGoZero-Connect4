@@ -1,6 +1,6 @@
 import numpy as np
 from TreeSearch import MCTS
-from Utils import getCanonicalForm
+from Utils import getCanonicalForm, getStateRepresentation
 
 class PlayAgent():
   
@@ -21,7 +21,21 @@ class AlphaZeroAgent(PlayAgent):
     self.name = "AlphaZero"
     
   def selectAction(self, game):
-    pi = self.mcts.getActionProb(game, temp=0)
+    if self.args['numMCTSSims']==0:
+      state = getStateRepresentation(game)
+      pi, v = self.nnetwrapper.predict(state)
+      valids = np.zeros(self.args['num_actions'])
+      valids[game.get_moves()]=1
+      pi = pi * valids  # masking invalid moves
+      # renormalize
+      sum_pi = np.sum(pi) 
+      if sum_pi>0:
+        pi /= sum_pi  
+      else:
+        pi += valids
+        pi /= np.sum(pi)
+    else:
+      pi = self.mcts.getActionProb(game, temp=0)
     return np.random.choice(len(pi), p=pi)
     
   def reset(self):

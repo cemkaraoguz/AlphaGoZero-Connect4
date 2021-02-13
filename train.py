@@ -40,28 +40,35 @@ if __name__=="__main__":
     'rows': 6,
     'num_actions': 7,
     # NN
-    'num_channels': 512,
-    'dropout': 0.3,
     'cuda': torch.cuda.is_available(),
+    'in_channels': 2,
+    'weight_decay': 1e-4,
+    'network': 'resnet',
+    # Resnet parameters
+    'num_channels': 32,
+    'num_res_blocks': [3,3,3],
+    # Convnet parameters
+    #'num_channels': 512,
+    #'dropout': 0.3,
     # Training
     'numIters': 200,                      # Number of iterations
     'numEps': 100,                        # Number of complete self-play games to simulate during a new iteration
     'epochs': 10,                         # Number of learning epochs
-    'batch_size': 64,                     # Batch size for training
+    'batch_size': 256,                    # Batch size for training
     'doStateAggregation': True,
     # MCTS
     'numMCTSSims': 50,                    # Number of games moves for MCTS to simulate.
     'cpuct': 4,                           # Upper confidence bound parameter
     'tempThreshold': 15,                  # Temperature for action selection
     'doScaleReward': True,                # Scale reward w.r.t game length?
-    'w_noise': 0.5,                       # Weight of Dirichlet noise added to the priors in the root node of MCTS
+    'w_noise': 0.0,                       # Weight of Dirichlet noise added to the priors in the root node of MCTS
     'alpha': 0.5,                         # Dirichlet noise parameter
     'maxlenQueue': 200000,                # Max number of game examples acquired from self plays.
     'maxItersForTrainExamplesHist': 20,   # Size of buffer for total training samples in terms of iterations
     'checkpointFolder': "./data",
     'checkpointLoadIteration': 0,
     'num_tests': 100,
-    'comments': "AdamW+Dirichlet+State Aggregation+Variable reward",
+    'comments': "Convnet+AdamW+State aggregation+Variable reward",
   }
   
   game = gym.make("Connect4-v0", width=args['cols'], height=args['rows'])
@@ -84,6 +91,7 @@ if __name__=="__main__":
 
   args_test = args_train.copy()
   args_test['w_noise'] = 0.0
+  args_test['tempThreshold'] = 0
 
   for i in range(iteration_start, args_train['numIters'] + 1): 
     

@@ -55,3 +55,8 @@ Here are all stages put together:
 <img src="figures/Figure_9.png" width=500><br>
 <img src="figures/Figure_10.png" width=500><br>
 
+## Update
+Results below are obtained via a setting where ResNet is used as function approximator:
+
+<img src="figures/Figure_11.png" width=500><br>
+<img src="figures/Figure_12.png" width=500><br>

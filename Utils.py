@@ -23,7 +23,10 @@ def getCanonicalForm(game):
   return np.transpose(np.flip(observation[player][1]+observation[player][2]*-1))
   
 def getStateRepresentation(game):
-  return getCanonicalForm(game)
+  #return getCanonicalForm(game)
+  observation = game.get_player_observations()
+  player = game.current_player
+  return np.array([observation[player][1], observation[player][2]*-1])
   
 def getCurrentPlayer(game):
   return 1 if game.current_player==0 else -1
